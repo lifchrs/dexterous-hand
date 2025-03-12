@@ -10,7 +10,6 @@ import os
 @register_agent()
 class InspireHand(BaseAgent):
     uid = "InspireHand"
-    use_open_tele_vision_hand = True
     urdf_path = os.path.join("inspire_hand", "inspire_hand_right.urdf")
     
     active_joints = [
