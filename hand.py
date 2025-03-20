@@ -43,7 +43,7 @@ class InspireHand(BaseAgent):
         joint_force_limit = 1 # force_limit of 1 is listed in the urdf, fingers only don't fly away to nan with this set to around <=0.05
         
         passive_controller = PassiveControllerConfig(
-            self.active_joints,
+            self.mimic_joints,
             joint_damping,
             joint_force_limit
         )
@@ -77,18 +77,29 @@ if __name__ == "__main__":
         robot_uids="InspireHand",
         num_envs=1,
         control_mode="pd_joint_pos",  
-        render_mode="human"
+        render_mode="rgb_array"
     )
     
     env.reset()
 
+    frames = []
     done = False
     env.render()
     # Start with the window paused (for stepping)
-    env.viewer.paused = True
-    while env.viewer.window is not None:
-        env.render()
+    # env.viewer.paused = True
+    for _ in range(20):  # Capture the first 20 frames
+        frame = env.render()[0]
+        frames.append(frame.cpu().numpy())  # Assuming get_image() captures the current frame
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
 
+    # Save frames as a video
+    import cv2
+    height, width, _ = frames[0].shape
+    video_writer = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
+    
+    for frame in frames:
+        video_writer.write(frame)
+
+    video_writer.release()
     env.close()
